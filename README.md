@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# হাঁড়ির স্বাদ — Harir Shad
+
+An e-commerce web app for Harir Shad, a Bengali dairy brand (দই / doi). Built with a
+Next.js (App Router) frontend and an Express + MongoDB API.
+
+## Stack
+
+- **Frontend:** Next.js 15+ (App Router), TypeScript, Tailwind CSS, Framer Motion, Sonner toasts
+- **Backend:** Express, Mongoose, TypeScript, `tsx` for dev/watch
+- **Storage:** MongoDB (data), Cloudinary (story videos), ImgBB (product images)
+- **Payments:** SSLCommerz (sandbox/live via `IS_LIVE`)
 
 ## Getting Started
 
-First, run the development server:
+Prerequisites: Node.js 20+, a running MongoDB instance, and API keys (see below).
+
+### 1. Backend API
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+cp .env.example .env   # or create .env (see Environment Variables)
+npm install
+npm run dev            # tsx watch → http://localhost:5000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Seed the admin user (optional, run once):
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+npm run seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Frontend
 
-## Learn More
+```bash
+npm install
+npm run dev            # → http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+The frontend calls the API at `NEXT_PUBLIC_API_URL` (default `http://localhost:5000`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Checks
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint && npm run typecheck   # frontend
+cd backend && npm run typecheck     # backend
+```
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Backend (`backend/.env`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `PORT` | `5000` | API port |
+| `MONGODB_URI` | — | **required** MongoDB connection string |
+| `JWT_SECRET` | — | **required**, min 8 chars |
+| `JWT_EXPIRES_IN` | `7d` | Also sets the auth cookie `Max-Age` |
+| `AUTH_COOKIE_NAME` | `hs_token` | HTTP-only auth cookie name |
+| `AUTH_COOKIE_SECURE` | `false` | Set `true` in production (HTTPS) |
+| `AUTH_COOKIE_SAME_SITE` | `lax` | `lax`, `strict`, or `none` |
+| `IMGBB_API_KEY` | `""` | Product image uploads |
+| `STORY_VIDEO_MAX_MB` | `100` | Max story video upload size |
+| `CLOUDINARY_CLOUD_NAME` | `""` | Story video uploads (Cloudinary) |
+| `CLOUDINARY_API_KEY` | `""` | Story video uploads |
+| `CLOUDINARY_API_SECRET` | `""` | Story video uploads |
+| `IS_LIVE` | `false` | Live vs sandbox SSLCommerz |
+| `SSLCOMMERZ_STORE_ID` | `""` | Payment gateway |
+| `SSLCOMMERZ_STORE_PASSWORD` | `""` | Payment gateway |
+| `FRONTEND_URL` | `http://localhost:3000` | CORS / payment callbacks |
+| `SERVER_URL` | `http://localhost:5000` | Payment callbacks |
+| `ADMIN_EMAIL` | `harirshadbogura@gmail.com` | Seeded admin login |
+| `ADMIN_PASSWORD` | `admin12345` | Seeded admin login (change in prod) |
+| `ADMIN_NAME` | `হাঁড়ির স্বাদ অ্যাডমিন` | Seeded admin name |
+
+### Frontend (`.env.local`)
+
+- `NEXT_PUBLIC_API_URL` — API base URL (default `http://localhost:5000`)
+- `NEXT_PUBLIC_APP_URL` — site URL for absolute links/OG tags (default `http://localhost:3000`)
+
+## Authentication
+
+- Login/register set an **HTTP-only cookie** (`hs_token` by default) so sessions survive
+  browser restarts. The cookie is sent on all API requests (`credentials: "include"`).
+- The `Authorization: Bearer <token>` header is still accepted as a fallback, which also
+  migrates legacy localStorage sessions: `GET /api/auth/me` sets the cookie when a valid
+  bearer token is present.
+- `POST /api/auth/logout` clears the cookie.
+- Admin routes gate on `user.role === "admin"`.
+
+## Cart
+
+- **Guests:** cart lives in `localStorage` (`hs-cart`).
+- **Logged-in users:** cart is stored on the server (`/api/cart`), keyed by user.
+- **Merge on login:** the guest localStorage cart is merged into the server cart and then
+  dropped from localStorage. The merge is idempotent — the server is authoritative, so a
+  page reload never duplicates or re-sums quantities.
+- Cart changes for logged-in users are synced to the server (debounced).
+
+## Project Structure
+
+```
+backend/
+  src/
+    config/env.ts          # Zod-validated environment variables
+    controllers/           # auth, cart, product, order, payment, user, storyVideo, misc
+    middleware/auth.ts     # requireAuth / optionalAuth (cookie OR bearer)
+    middleware/error.ts
+    models/                # Mongoose models (User, Product, Cart, Order, StoryVideo, …)
+    routes/
+    scripts/seed.ts
+    services/              # auth, cloudinary, imagebb, sslcommerz
+    utils/cookies.ts       # setAuthCookie / clearAuthCookie / parseCookieToken
+src/
+  app/(site)/              # public pages: products, cart, checkout, auth, about, contact, wishlist
+  app/(dashboard)/         # admin + account areas
+  components/admin/        # admin UI (product form, image upload, useAdminFetch, …)
+  components/layout/       # Navbar, Footer, …
+  components/product/      # ProductCard, ProductDetail, StoryVideoPlayer, …
+  lib/api.ts               # fetch wrapper (credentials: include, optional bearer)
+  lib/types.ts
+  providers/               # AuthProvider, CartProvider
+```
+
+## API Overview
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | — | Register (sets cookie) |
+| POST | `/api/auth/login` | — | Login (sets cookie) |
+| GET | `/api/auth/me` | cookie/bearer | Current user |
+| PUT | `/api/auth/me` | cookie/bearer | Update profile |
+| POST | `/api/auth/logout` | — | Clear auth cookie |
+| GET/PUT/DELETE | `/api/cart` | required | Server cart |
+| GET | `/api/products` | — | Product catalog |
+| GET | `/api/products/slug/:slug` | — | Product by slug |
+| POST/PUT/DELETE | `/api/products[/:id]` | admin | Product CRUD |
+| POST | `/api/orders` | optional | Create order (works for guests) |
+| GET | `/api/orders/mine` | required | Current user's orders |
+| GET | `/api/orders`, `/api/orders/:id` | admin | Order management |
+| PUT | `/api/orders/:id` | admin | Update order/payment status |
+| GET/PUT/DELETE | `/api/story-video` | admin (GET public) | Story video (Cloudinary) |
+| POST | `/api/contacts` | — | Contact form |
+| POST | `/api/newsletter` | — | Newsletter subscribe |
+| GET/PATCH | `/api/contacts` | admin | Contact messages |
+| POST | `/api/upload` | admin | Image upload (ImgBB) |
+| GET | `/api/stats` | admin | Dashboard stats |
+| GET/PUT/DELETE | `/api/users[/:id]` | admin | User management |
+| GET/POST | `/api/payments/success`, `/fail`, `/cancel`, `/ipn` | — | SSLCommerz flow |
