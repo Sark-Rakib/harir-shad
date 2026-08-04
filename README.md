@@ -54,7 +54,6 @@ cd backend && npm run typecheck     # backend
 | `PORT` | `5000` | API port |
 | `MONGODB_URI` | — | **required** MongoDB connection string |
 | `JWT_SECRET` | — | **required**, min 8 chars |
-| `JWT_EXPIRES_IN` | `7d` | Also sets the auth cookie `Max-Age` |
 | `AUTH_COOKIE_NAME` | `hs_token` | HTTP-only auth cookie name |
 | `AUTH_COOKIE_SECURE` | `false` | Set `true` in production (HTTPS) |
 | `AUTH_COOKIE_SAME_SITE` | `lax` | `lax`, `strict`, or `none` |
@@ -81,6 +80,7 @@ cd backend && npm run typecheck     # backend
 
 - Login/register set an **HTTP-only cookie** (`hs_token` by default) so sessions survive
   browser restarts. The cookie is sent on all API requests (`credentials: "include"`).
+- Tokens do **not expire** — a user stays logged in until they explicitly log out.
 - The `Authorization: Bearer <token>` header is still accepted as a fallback, which also
   migrates legacy localStorage sessions: `GET /api/auth/me` sets the cookie when a valid
   bearer token is present.

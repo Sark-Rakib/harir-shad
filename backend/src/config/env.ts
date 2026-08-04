@@ -5,7 +5,6 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(5000),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   JWT_SECRET: z.string().min(8, "JWT_SECRET must be at least 8 characters"),
-  JWT_EXPIRES_IN: z.string().default("7d"),
 
   AUTH_COOKIE_NAME: z.string().default("hs_token"),
   AUTH_COOKIE_SECURE: z

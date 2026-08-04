@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import jwt, { type SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { parseCookieToken } from "../utils/cookies";
 
@@ -15,11 +15,11 @@ export interface AuthRequest extends Request {
 }
 
 export function signToken(user: { id: string; email: string; name: string; role: "admin" | "user" }): string {
-  const options: SignOptions = { expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"] };
+  // No expiresIn — tokens never expire. Users stay logged in until they
+  // explicitly log out (which clears the auth cookie).
   return jwt.sign(
     { id: user.id, email: user.email, name: user.name, role: user.role },
     env.JWT_SECRET,
-    options,
   );
 }
 

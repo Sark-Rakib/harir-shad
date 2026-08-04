@@ -1,6 +1,10 @@
 import type { Response } from "express";
 import { env } from "../config/env";
 
+// Browsers cap cookie lifetimes around 400 days. The auth JWT never expires,
+// so the cookie lives as long as possible — the session ends on logout.
+const AUTH_COOKIE_MAX_AGE_MS = 400 * 24 * 60 * 60 * 1000;
+
 export function parseCookieToken(req: { headers: Record<string, unknown> }): string {
   const cookieHeader = String(req.headers.cookie ?? "");
   if (!cookieHeader) return "";
@@ -12,22 +16,12 @@ export function parseCookieToken(req: { headers: Record<string, unknown> }): str
   return match.slice(env.AUTH_COOKIE_NAME.length + 1) || "";
 }
 
-function maxAgeFromExpires(expiresIn: string): number {
-  const value = Number.parseInt(expiresIn, 10);
-  if (Number.isNaN(value)) return 7 * 24 * 60 * 60;
-  const unit = expiresIn.replace(/\d+/g, "").toLowerCase();
-  const seconds =
-    unit === "m" ? 60 : unit === "h" ? 60 * 60 : unit === "d" ? 24 * 60 * 60 : unit === "w" ? 7 * 24 * 60 * 60 : 1;
-  return value * seconds;
-}
-
 export function setAuthCookie(res: Response, token: string) {
-  const maxAgeMs = maxAgeFromExpires(env.JWT_EXPIRES_IN) * 1000;
   res.cookie(env.AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     secure: env.AUTH_COOKIE_SECURE,
     sameSite: env.AUTH_COOKIE_SAME_SITE === "lax" ? "lax" : env.AUTH_COOKIE_SAME_SITE === "strict" ? "strict" : "none",
-    maxAge: maxAgeMs,
+    maxAge: AUTH_COOKIE_MAX_AGE_MS,
     path: "/",
   });
 }
