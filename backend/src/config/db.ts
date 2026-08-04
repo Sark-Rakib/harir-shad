@@ -11,3 +11,8 @@ export async function connectDb(uri: string): Promise<void> {
     process.exit(1);
   }
 }
+
+// Serverless-friendly: connects but throws on failure instead of exiting.
+export async function connectDbSafe(uri: string): Promise<void> {
+  await mongoose.connect(uri, { dbName: DB_NAME });
+}

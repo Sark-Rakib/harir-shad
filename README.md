@@ -76,6 +76,51 @@ cd backend && npm run typecheck     # backend
 - `NEXT_PUBLIC_API_URL` — API base URL (default `http://localhost:5000`)
 - `NEXT_PUBLIC_APP_URL` — site URL for absolute links/OG tags (default `http://localhost:3000`)
 
+## Deploying to Vercel
+
+The repo deploys the frontend and the Express API together on Vercel. The backend runs as
+a single catch-all serverless function (`api/[...path].ts`) that mounts the Express app and
+holds a cached MongoDB connection. No Docker or separate host is required.
+
+Steps:
+
+1. Push the repo to GitHub (`git push origin main`).
+2. Import it at [vercel.com/new](https://vercel.com/new) (framework auto-detected as Next.js).
+3. Set **environment variables** on the Vercel project (these serve both the frontend build
+   and the API runtime):
+
+   ```
+   # Frontend (read at build time)
+   NEXT_PUBLIC_API_URL=https://<your-domain>.vercel.app
+   NEXT_PUBLIC_APP_URL=https://<your-domain>.vercel.app
+
+   # Backend (read at runtime by the API function)
+   MONGODB_URI=mongodb+srv://...
+   JWT_SECRET=<a-long-random-string>
+   CLOUDINARY_CLOUD_NAME=...
+   CLOUDINARY_API_KEY=...
+   CLOUDINARY_API_SECRET=...
+   IMGBB_API_KEY=...
+   STORY_VIDEO_MAX_MB=100
+   FRONTEND_URL=https://<your-domain>.vercel.app
+   SERVER_URL=https://<your-domain>.vercel.app
+   IS_LIVE=false
+   SSLCOMMERZ_STORE_ID=...
+   SSLCOMMERZ_STORE_PASSWORD=...
+   ```
+
+4. Deploy. The `postinstall` script (`cd backend && npm ci`) installs the API's dependencies
+   so the serverless function can bundle them. The `vercel.json` `functions` entry grants the
+   API extra runtime if needed.
+
+Notes:
+
+- Set `NEXT_PUBLIC_API_URL` to the **same origin** as the site (e.g. `...vercel.app`) so the
+  auth cookie is same-site and the default `SameSite=Lax` works — no CORS/cross-site issues.
+- `MONGODB_URI` must point to a reachable host (e.g. MongoDB Atlas); localhost won't work.
+- File uploads (story video → Cloudinary, product images → ImgBB) run from memory buffers and
+  work on serverless with no disk.
+
 ## Authentication
 
 - Login/register set an **HTTP-only cookie** (`hs_token` by default) so sessions survive
@@ -99,6 +144,7 @@ cd backend && npm run typecheck     # backend
 ## Project Structure
 
 ```
+api/[...path].ts           # Vercel serverless catch-all that mounts the Express API
 backend/
   src/
     config/env.ts          # Zod-validated environment variables
