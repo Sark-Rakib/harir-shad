@@ -67,8 +67,6 @@ cd backend && npm run typecheck     # backend
 | `SSLCOMMERZ_STORE_PASSWORD` | `""` | Payment gateway |
 | `FRONTEND_URL` | `http://localhost:3000` | CORS / payment callbacks |
 | `SERVER_URL` | `http://localhost:5000` | Payment callbacks |
-| `ADMIN_EMAIL` | `harirshadbogura@gmail.com` | Seeded admin login |
-| `ADMIN_PASSWORD` | `admin12345` | Seeded admin login (change in prod) |
 | `ADMIN_NAME` | `হাঁড়ির স্বাদ অ্যাডমিন` | Seeded admin name |
 
 ### Frontend (`.env.local`)
