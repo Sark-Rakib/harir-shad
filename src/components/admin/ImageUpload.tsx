@@ -11,13 +11,13 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
   const handleFile = async (file: File | undefined) => {
-    if (!file || !token) return;
+    if (!file || !user) return;
     setError("");
     setUploading(true);
     try {

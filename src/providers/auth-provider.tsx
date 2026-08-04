@@ -25,14 +25,11 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
-function saveToStorage(key: string, value: unknown) {
+function clearStoredAuth() {
   if (typeof window === "undefined") return;
   try {
-    if (value == null) {
-      window.localStorage.removeItem(key);
-    } else {
-      window.localStorage.setItem(key, JSON.stringify(value));
-    }
+    window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(USER_KEY);
   } catch {
     // ignore storage errors
   }
@@ -67,29 +64,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const init = async () => {
-      const storedToken = loadFromStorage<string | null>(TOKEN_KEY, null);
-      if (!storedToken) {
-        setLoading(false);
-        return;
-      }
+      // 1) Persistent session via the HTTP-only auth cookie (set on login).
       try {
-        const res = await api.getAuth<{ user: AuthUser }>(
-          "/api/auth/me",
-          storedToken,
-        );
-        if (cancelled) return;
-        setUser(res.user);
-        setToken(storedToken);
-        saveToStorage(USER_KEY, res.user);
+        const res = await api.get<{ user: AuthUser }>("/api/auth/me");
+        if (!cancelled && res?.user) {
+          setUser(res.user);
+          clearStoredAuth();
+          setLoading(false);
+          return;
+        }
       } catch {
-        if (cancelled) return;
-        setToken(null);
-        setUser(null);
-        saveToStorage(TOKEN_KEY, null);
-        saveToStorage(USER_KEY, null);
-      } finally {
-        if (!cancelled) setLoading(false);
+        // no valid cookie — fall through
       }
+
+      // 2) Legacy sessions stored in localStorage (pre-cookie). Validating
+      //    here also migrates them to the cookie via /me.
+      const storedToken = loadFromStorage<string | null>(TOKEN_KEY, null);
+      if (storedToken) {
+        try {
+          const res = await api.getAuth<{ user: AuthUser }>(
+            "/api/auth/me",
+            storedToken,
+          );
+          if (!cancelled && res?.user) {
+            setUser(res.user);
+            setToken(storedToken);
+            clearStoredAuth();
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // stale token — clear below
+        }
+      }
+
+      clearStoredAuth();
+      if (!cancelled) setLoading(false);
     };
 
     init();
@@ -101,8 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const applyAuth = useCallback((res: AuthResponse) => {
     setUser(res.user);
     setToken(res.token);
-    saveToStorage(TOKEN_KEY, res.token);
-    saveToStorage(USER_KEY, res.user);
+    clearStoredAuth();
   }, []);
 
   const login = useCallback(
@@ -127,22 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
+    api.post("/api/auth/logout", {}).catch(() => {});
     setToken(null);
     setUser(null);
-    saveToStorage(TOKEN_KEY, null);
-    saveToStorage(USER_KEY, null);
+    clearStoredAuth();
   }, []);
 
   const updateProfile = useCallback(
     async (data: { name: string; phone: string }) => {
-      if (!token) throw new Error("লগইন প্রয়োজন।");
       const res = await api.putAuth<{ user: AuthUser }>(
         "/api/auth/me",
         data,
         token,
       );
       setUser(res.user);
-      saveToStorage(USER_KEY, res.user);
       return res.user;
     },
     [token],

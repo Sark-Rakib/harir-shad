@@ -37,7 +37,7 @@ const paymentStatusOptions: PaymentStatus[] = [
 ];
 
 export default function AdminOrdersPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function AdminOrdersPage() {
     field: "orderStatus" | "paymentStatus",
     value: string,
   ) => {
-    if (!token) return;
+    if (!user) return;
     setBusy(`${getId(order)}-${field}`);
     setActionError("");
     try {

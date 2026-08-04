@@ -120,8 +120,24 @@ function getServerSnapshot(): CartStore {
   return EMPTY_STORE;
 }
 
+function mergeCarts(server: CartItem[], local: CartItem[]): CartItem[] {
+  const byId = new Map<string, CartItem>();
+  for (const item of server) {
+    byId.set(item.productId, { ...item });
+  }
+  for (const item of local) {
+    // The server is authoritative; only fold in guest line items that are
+    // not already saved on the server. This keeps the merge idempotent so
+    // a page reload never sums quantities on top of themselves.
+    if (!byId.has(item.productId)) {
+      byId.set(item.productId, { ...item });
+    }
+  }
+  return Array.from(byId.values());
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [cartOpen, setCartOpen] = useState(false);
   const serverReadyRef = useRef(false);
@@ -129,8 +145,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { items, appliedCode, wishlist, recentlyViewed } = state;
 
   // Load the user's saved cart from the server whenever auth state changes.
+  // The guest localStorage cart is merged into the server cart (no duplicates).
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       serverReadyRef.current = true;
       return;
     }
@@ -144,26 +161,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
         const serverItems = res.items ?? [];
         const serverCode = res.appliedCode ?? null;
-        if (serverItems.length > 0) {
+        const localItems = loadFromStorage<CartItem[]>(CART_KEY, []);
+        const localCode = loadFromStorage<string | null>(
+          `${CART_KEY}-coupon`,
+          null,
+        );
+
+        const mergedItems = mergeCarts(serverItems, localItems);
+        const mergedCode = serverCode ?? localCode;
+        const hasLocal = localItems.length > 0 || localCode;
+
+        if (serverItems.length === 0 && !hasLocal) {
+          // Nothing anywhere — leave the cart empty.
+        } else {
+          const saved = await api
+            .putAuth<ServerCart>(
+              "/api/cart",
+              { items: mergedItems, appliedCode: mergedCode },
+              token,
+            )
+            .then(() => true)
+            .catch(() => false);
           mutate((prev) => ({
             ...prev,
-            items: serverItems,
-            appliedCode: serverCode,
+            items: mergedItems,
+            appliedCode: mergedCode,
           }));
-        } else {
-          const localItems = loadFromStorage<CartItem[]>(CART_KEY, []);
-          const localCode = loadFromStorage<string | null>(
-            `${CART_KEY}-coupon`,
-            null,
-          );
-          if (localItems.length > 0 || localCode) {
-            await api
-              .putAuth<ServerCart>(
-                "/api/cart",
-                { items: localItems, appliedCode: localCode },
-                token,
-              )
-              .catch(() => {});
+          if (saved) {
+            // Once the guest cart has been merged onto the server, drop the
+            // localStorage copy so future loads are server-authoritative and
+            // quantities never accumulate on top of themselves.
+            localStorage.removeItem(CART_KEY);
+            localStorage.removeItem(`${CART_KEY}-coupon`);
           }
         }
       } catch {
@@ -176,13 +205,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [user, token]);
 
   // Debounced sync of cart changes back to the server for logged-in users.
   // Skipped until the initial server cart has been loaded so we never
   // clobber a saved cart with a stale local one.
   useEffect(() => {
-    if (!token || !serverReadyRef.current) return;
+    if (!user || !serverReadyRef.current) return;
     const timer = setTimeout(() => {
       api
         .putAuth<ServerCart>(
@@ -193,7 +222,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .catch(() => {});
     }, 600);
     return () => clearTimeout(timer);
-  }, [token, items, appliedCode]);
+  }, [user, token, items, appliedCode]);
 
   const addItem = useCallback((product: Product, quantity = 1) => {
     mutate((prev) => {

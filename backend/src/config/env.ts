@@ -7,6 +7,16 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8, "JWT_SECRET must be at least 8 characters"),
   JWT_EXPIRES_IN: z.string().default("7d"),
 
+  AUTH_COOKIE_NAME: z.string().default("hs_token"),
+  AUTH_COOKIE_SECURE: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  AUTH_COOKIE_SAME_SITE: z
+    .enum(["lax", "strict", "none"])
+    .default("lax")
+    .transform((v) => v),
+
   IMGBB_API_KEY: z.string().default(""),
 
   STORY_VIDEO_MAX_MB: z.coerce.number().default(100),

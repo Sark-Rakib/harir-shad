@@ -12,7 +12,7 @@ interface AdminFetchResult<T> {
 }
 
 export function useAdminFetch<T>(path: string, reloadKey = 0): AdminFetchResult<T> {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export function useAdminFetch<T>(path: string, reloadKey = 0): AdminFetchResult<
   const reload = useCallback(() => setTick((t) => t + 1), []);
 
   useEffect(() => {
-    if (!token) return;
+    if (!user) return;
     let cancelled = false;
     api
       .getAuth<T>(path, token)
@@ -41,7 +41,7 @@ export function useAdminFetch<T>(path: string, reloadKey = 0): AdminFetchResult<
     return () => {
       cancelled = true;
     };
-  }, [path, token, reloadKey, tick]);
+  }, [path, token, user, reloadKey, tick]);
 
   return { data, loading, error, reload };
 }

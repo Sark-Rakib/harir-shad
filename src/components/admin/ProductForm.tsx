@@ -93,7 +93,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ mode, productId, initial }: ProductFormProps) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => toForm(initial));
   const [busy, setBusy] = useState(false);
@@ -122,7 +122,7 @@ export function ProductForm({ mode, productId, initial }: ProductFormProps) {
       setError("পণ্যের ওজন (গ্রাম) দিন।");
       return;
     }
-    if (!token) return;
+    if (!user) return;
 
     const payload: ProductPayload = {
       slug: form.slug.trim() || undefined,

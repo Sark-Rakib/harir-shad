@@ -13,7 +13,7 @@ import type { AdminProduct } from "@/lib/types";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function AdminProductsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [query, setQuery] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
@@ -34,7 +34,7 @@ export default function AdminProductsPage() {
   }, [data, query]);
 
   const handleDelete = async (p: AdminProduct) => {
-    if (!token) return;
+    if (!user) return;
     if (!window.confirm(`"${p.nameBn}" পণ্যটি মুছে ফেলবেন? এটি আর ফেরানো যাবে না।`)) {
       return;
     }

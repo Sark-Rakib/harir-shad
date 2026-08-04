@@ -18,7 +18,7 @@ import type { StoryVideo } from "@/lib/types";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function AdminStoryVideoPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<null | "upload" | "save" | "delete">(null);
   const [title, setTitle] = useState("");
@@ -32,7 +32,7 @@ export default function AdminStoryVideoPage() {
   const [dirty, setDirty] = useState(false);
 
   const handleSelectFile = async (file: File | undefined) => {
-    if (!file || !token) return;
+    if (!file || !user) return;
     setActionError("");
     setBusy("upload");
     try {
@@ -60,7 +60,7 @@ export default function AdminStoryVideoPage() {
   };
 
   const handleSaveMetadata = async () => {
-    if (!token) return;
+    if (!user) return;
     setActionError("");
     setBusy("save");
     try {
@@ -83,7 +83,7 @@ export default function AdminStoryVideoPage() {
   };
 
   const handleDelete = async () => {
-    if (!token) return;
+    if (!user) return;
     if (!window.confirm("ভিডিওটি মুছে ফেলবেন? এটি আর ফেরানো যাবে না।")) return;
     setActionError("");
     setBusy("delete");

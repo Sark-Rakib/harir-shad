@@ -32,7 +32,7 @@ export default function AdminUsersPage() {
   }, [data, query]);
 
   const run = async (action: () => Promise<unknown>, key: string) => {
-    if (!token) return;
+    if (!currentUser) return;
     setBusy(key);
     setActionError("");
     try {

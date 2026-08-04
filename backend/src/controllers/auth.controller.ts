@@ -5,6 +5,7 @@ import { User } from "../models/User";
 import { signToken, type AuthRequest } from "../middleware/auth";
 import { findOrCreateUser } from "../services/auth.service";
 import { HttpError } from "../utils/HttpError";
+import { clearAuthCookie, setAuthCookie } from "../utils/cookies";
 
 const registerSchema = z.object({
   name: z.string().min(2, "নাম অন্তত ২ অক্ষরের হতে হবে।"),
@@ -43,6 +44,8 @@ export async function register(req: Request, res: Response) {
     name: user.name,
     role: user.role,
   });
+
+  setAuthCookie(res, token);
 
   return res.status(201).json({ user: user.toJSON(), token });
 }
@@ -85,14 +88,27 @@ export async function login(req: Request, res: Response) {
     role: synced.role,
   });
 
+  setAuthCookie(res, token);
+
   return res.json({ user: synced.toJSON(), token });
 }
 
 export async function me(req: Request, res: Response) {
   const authReq = req as AuthRequest;
+  // Migrate legacy header-based sessions to the HTTP-only cookie so they stay
+  // signed in after a browser restart.
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) {
+    setAuthCookie(res, header.slice(7));
+  }
   const user = await User.findById(authReq.user?.id);
   if (!user) throw new HttpError(404, "ব্যবহারকারী পাওয়া যায়নি।");
   return res.json({ user: user.toJSON() });
+}
+
+export async function logout(req: Request, res: Response) {
+  clearAuthCookie(res);
+  return res.json({ message: "লগআউট সফল হয়েছে।" });
 }
 
 const updateMeSchema = z.object({

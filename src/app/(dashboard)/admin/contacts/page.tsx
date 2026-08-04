@@ -12,7 +12,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 export default function AdminContactsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
@@ -33,7 +33,7 @@ export default function AdminContactsPage() {
   }, [data, query]);
 
   const markRead = async (m: ContactMessage) => {
-    if (!token || m.read) return;
+    if (!user || m.read) return;
     setBusy(getId(m));
     setActionError("");
     try {

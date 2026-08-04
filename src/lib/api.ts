@@ -35,6 +35,7 @@ async function request<T>(
         "Content-Type": "application/json",
         ...options.headers,
       },
+      credentials: "include",
       cache: "no-store",
     });
   } catch {
@@ -44,6 +45,10 @@ async function request<T>(
   return parseResponse<T>(res);
 }
 
+function authHeaders(token?: string | null): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
@@ -51,38 +56,39 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  getAuth: <T>(path: string, token: string) =>
+  getAuth: <T>(path: string, token?: string | null) =>
     request<T>(path, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
     }),
-  postAuth: <T>(path: string, body: unknown, token: string) =>
+  postAuth: <T>(path: string, body: unknown, token?: string | null) =>
     request<T>(path, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
       body: JSON.stringify(body),
     }),
-  putAuth: <T>(path: string, body: unknown, token: string) =>
+  putAuth: <T>(path: string, body: unknown, token?: string | null) =>
     request<T>(path, {
       method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
       body: JSON.stringify(body),
     }),
-  patchAuth: <T>(path: string, body: unknown, token: string) =>
+  patchAuth: <T>(path: string, body: unknown, token?: string | null) =>
     request<T>(path, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
       body: JSON.stringify(body),
     }),
-  deleteAuth: <T>(path: string, token: string) =>
+  deleteAuth: <T>(path: string, token?: string | null) =>
     request<T>(path, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
     }),
-  postFormAuth: <T>(path: string, formData: FormData, token: string) =>
+  postFormAuth: <T>(path: string, formData: FormData, token?: string | null) =>
     fetch(`${API_URL}${path}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: authHeaders(token),
       body: formData,
+      credentials: "include",
       cache: "no-store",
     })
       .then((res) => parseResponse<T>(res))

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
+import { parseCookieToken } from "../utils/cookies";
 
 export interface AuthUser {
   id: string;
@@ -22,40 +23,45 @@ export function signToken(user: { id: string; email: string; name: string; role:
   );
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+function tokenFrom(req: Request): string {
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "লগইন প্রয়োজন।" });
-  }
+  if (header?.startsWith("Bearer ")) return header.slice(7);
+  return parseCookieToken(req);
+}
 
-  const token = header.slice(7);
+function verifyToken(token: string): AuthUser | null {
   try {
     const payload = jwt.verify(token, env.JWT_SECRET) as unknown as AuthUser;
-    (req as AuthRequest).user = {
+    return {
       id: payload.id,
       email: payload.email,
       name: payload.name,
       role: payload.role,
     };
-    return next();
   } catch {
-    return res.status(401).json({ message: "অবৈধ বা মেয়াদোত্তীর্ণ টোকেন। আবার লগইন করুন।" });
+    return null;
   }
 }
 
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = tokenFrom(req);
+  if (!token) {
+    return res.status(401).json({ message: "লগইন প্রয়োজন।" });
+  }
+
+  const user = verifyToken(token);
+  if (!user) {
+    return res.status(401).json({ message: "অবৈধ বা মেয়াদোত্তীর্ণ টোকেন। আবার লগইন করুন।" });
+  }
+  (req as AuthRequest).user = user;
+  return next();
+}
+
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) return next();
-  try {
-    const payload = jwt.verify(header.slice(7), env.JWT_SECRET) as unknown as AuthUser;
-    (req as AuthRequest).user = {
-      id: payload.id,
-      email: payload.email,
-      name: payload.name,
-      role: payload.role,
-    };
-  } catch {
-    // ignore invalid token — treat as anonymous
+  const token = tokenFrom(req);
+  if (token) {
+    const user = verifyToken(token);
+    if (user) (req as AuthRequest).user = user;
   }
   return next();
 }

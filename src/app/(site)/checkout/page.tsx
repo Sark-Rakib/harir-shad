@@ -53,7 +53,7 @@ function getOrCreateCheckoutKey(): string {
 }
 
 export default function CheckoutPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { items, subtotal, discount, deliveryCharge, total, clearCart, setCartOpen } =
     useCart();
 
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
     };
 
     try {
-      const res = token
+      const res = user
         ? await api.postAuth<OrderResult>("/api/orders", payload, token)
         : await api.post<OrderResult>("/api/orders", payload);
       clearCart();
