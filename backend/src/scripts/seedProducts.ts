@@ -1,0 +1,361 @@
+import "dotenv/config";
+import mongoose from "mongoose";
+import { env } from "../config/env";
+import { Product } from "../models/Product";
+
+const products = [
+  {
+    slug: "mati-herir-traditional-doi-500g",
+    nameBn: "মাটির হাঁড়ির ঐতিহ্যবাহী দই",
+    nameEn: "Traditional Clay-Pot Doi",
+    taglineBn: "আসল বগুড়ার স্বাদ, মাটির হাঁড়িতে",
+    taglineEn: "The true Bogura taste, in a clay pot",
+    descriptionBn:
+      "বগুড়ার ঐতিহ্যবাহী পদ্ধতিতে মাটির হাঁড়িতে ফুটিয়ে, প্রাকৃতিকভাবে জমানো আসল দই। মিষ্টি, ঘন ও ক্রিমি টেক্সচার — প্রতিটি চামচে ঐতিহ্যের স্বাদ। কোনো প্রিজারভেটিভ নেই।",
+    descriptionEn:
+      "Authentic Bogura doi prepared the traditional way — slow-boiled in clay pots and naturally fermented. Sweet, thick and creamy, with heritage in every spoon. No preservatives.",
+    weight: 500,
+    weightLabel: "৫০০ গ্রাম",
+    price: 240,
+    oldPrice: 280,
+    rating: 4.9,
+    reviewsCount: 1284,
+    stock: 120,
+    tags: ["popular", "bestseller"],
+    image: "traditional-pot",
+    gallery: ["traditional-pot", "yogurt-bowl", "premium-jar"],
+    ingredientsBn: [
+      "খাঁটি গরুর দুধ",
+      "চিনি",
+      "প্রাকৃতিক টক (জমাটবাঁধার জন্য)",
+      "ইলাচি (ঐচ্ছিক)",
+    ],
+    ingredientsEn: [
+      "Pure cow's milk",
+      "Sugar",
+      "Natural starter culture",
+      "Cardamom (optional)",
+    ],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 120,
+      fat: 4.5,
+      protein: 4.2,
+      carbs: 16,
+      sugar: 14,
+      calciumMg: 110,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "mati-herir-traditional-doi-250g",
+    nameBn: "মাটির হাঁড়ির দই (পরিবেশন আকার)",
+    nameEn: "Clay-Pot Doi (Single Serving)",
+    taglineBn: "এক চামচেই বগুড়ার স্বাদ",
+    taglineEn: "Bogura's taste in a single serving",
+    descriptionBn:
+      "ব্যক্তিগত পরিবেশনের জন্য পারফেক্ট মাপের মাটির হাঁড়ির দই। একই ঐতিহ্যবাহী রেসিপি, ছোট পরিসরে — প্রতিদিনের মিষ্টি মুহূর্তের জন্য।",
+    descriptionEn:
+      "A perfectly sized clay pot for personal servings. The same heritage recipe in a smaller portion — for your everyday sweet moment.",
+    weight: 250,
+    weightLabel: "২৫০ গ্রাম",
+    price: 140,
+    oldPrice: 160,
+    rating: 4.8,
+    reviewsCount: 862,
+    stock: 200,
+    tags: ["new"],
+    image: "mini-pot",
+    gallery: ["mini-pot", "traditional-pot", "yogurt-bowl"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Sugar", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 118,
+      fat: 4.2,
+      protein: 4.1,
+      carbs: 15.5,
+      sugar: 13.5,
+      calciumMg: 108,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "mati-herir-traditional-doi-1kg",
+    nameBn: "মাটির হাঁড়ির দই (১ কেজি)",
+    nameEn: "Clay-Pot Doi (1 kg)",
+    taglineBn: "বড় হাঁড়ি, পূর্ণ স্বাদ",
+    taglineEn: "A bigger pot, the full taste",
+    descriptionBn:
+      "পুরো পরিবারের জন্য বড় মাটির হাঁড়ির দই। ঈদ, অনুষ্ঠান কিংবা প্রতিদিনের ডেজার্ট — ১ কেজি প্যাক যেকোনো মুহূর্তকে করে তোলে বিশেষ।",
+    descriptionEn:
+      "A large clay pot for the whole family. Eid, celebrations or your everyday dessert — the 1kg pack makes any moment special.",
+    weight: 1000,
+    weightLabel: "১ কেজি",
+    price: 450,
+    rating: 4.9,
+    reviewsCount: 640,
+    stock: 80,
+    tags: ["popular"],
+    image: "family-pot",
+    gallery: ["family-pot", "traditional-pot", "yogurt-bowl"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Sugar", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 120,
+      fat: 4.5,
+      protein: 4.2,
+      carbs: 16,
+      sugar: 14,
+      calciumMg: 110,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "borobari-family-pack-2kg",
+    nameBn: "বড়বাড়ি ফ্যামিলি প্যাক (২ কেজি)",
+    nameEn: "Borobari Family Pack (2 kg)",
+    taglineBn: "বড় আয়োজনের জন্য",
+    taglineEn: "Made for big gatherings",
+    descriptionBn:
+      "বড় পরিবার ও অনুষ্ঠানের জন্য দুই কেজির স্পেশাল প্যাক। খামারের তাজা দুধে তৈরি, একই খাঁটি রেসিপি — সবাইকে সাথে করে উপভোগ করুন।",
+    descriptionEn:
+      "A special 2kg pack for big families and events. Made from fresh farm milk with the same authentic recipe — enjoy it with everyone.",
+    weight: 2000,
+    weightLabel: "২ কেজি",
+    price: 850,
+    oldPrice: 920,
+    rating: 4.9,
+    reviewsCount: 421,
+    stock: 60,
+    tags: ["bestseller"],
+    image: "family-pot",
+    gallery: ["family-pot", "premium-jar", "traditional-pot"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Sugar", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 122,
+      fat: 4.6,
+      protein: 4.3,
+      carbs: 16.2,
+      sugar: 14.2,
+      calciumMg: 112,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "mishti-doi-500g",
+    nameBn: "মিষ্টি দই (অতিরিক্ত মিষ্টি)",
+    nameEn: "Mishti Doi (Extra Sweet)",
+    taglineBn: "মিষ্টিপ্রেমীদের জন্য",
+    taglineEn: "For the sweet-toothed",
+    descriptionBn:
+      "বিশেষ রেসিপিতে অতিরিক্ত মিষ্টি স্বাদের দই। গুড় ও চিনির নিখুঁত মিশ্রণে তৈরি — প্রতিটি কামড়ে ভিন্ন এক মিষ্টি অভিজ্ঞতা।",
+    descriptionEn:
+      "Extra-sweet doi from a special recipe. A perfect blend of jaggery and sugar creates a distinctly sweet experience in every bite.",
+    weight: 500,
+    weightLabel: "৫০০ গ্রাম",
+    price: 260,
+    oldPrice: 290,
+    rating: 4.8,
+    reviewsCount: 512,
+    stock: 90,
+    tags: ["popular"],
+    image: "sweet-doi",
+    gallery: ["sweet-doi", "traditional-pot", "yogurt-bowl"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "গুড়", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: [
+      "Pure cow's milk",
+      "Jaggery",
+      "Sugar",
+      "Natural starter culture",
+    ],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 135,
+      fat: 4.6,
+      protein: 4.0,
+      carbs: 20,
+      sugar: 18,
+      calciumMg: 105,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "tok-doi-500g",
+    nameBn: "টক দই (প্লেইন)",
+    nameEn: "Tok Doi (Plain)",
+    taglineBn: "টক-মিষ্টি নিখুঁত ভারসাম্য",
+    taglineEn: "A perfect tangy-sweet balance",
+    descriptionBn:
+      "ভাত, পোলাও কিংবা মুড়ির সাথে জমে যাওয়া টক দই। প্রাকৃতিকভাবে জমাটবাঁধা, হালকা টক স্বাদ — মুখের রুচি বাড়ানোর সেরা সঙ্গী।",
+    descriptionEn:
+      "Plain doi that pairs perfectly with rice, polao or muri. Naturally fermented with a gentle tang — the best companion to refresh your palate.",
+    weight: 500,
+    weightLabel: "৫০০ গ্রাম",
+    price: 230,
+    rating: 4.7,
+    reviewsCount: 389,
+    stock: 100,
+    tags: [],
+    image: "sour-doi",
+    gallery: ["sour-doi", "traditional-pot", "yogurt-bowl"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 85,
+      fat: 3.8,
+      protein: 4.4,
+      carbs: 7,
+      sugar: 4,
+      calciumMg: 118,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "gift-box-doi-2x500g",
+    nameBn: "উপহার বক্স (২ × ৫০০ গ্রাম)",
+    nameEn: "Gift Box (2 × 500g)",
+    taglineBn: "ভালোবাসার উপহার, ঐতিহ্যের স্বাদে",
+    taglineEn: "A gift of love, with the taste of heritage",
+    descriptionBn:
+      "প্রিয়জনকে উপহার দিন বগুড়ার আসল স্বাদ। সুন্দর প্রিমিয়াম প্যাকেজিংয়ে দুইটি মাটির হাঁড়ির দই — ঈদ, জন্মদিন বা যেকোনো বিশেষ উপলক্ষে।",
+    descriptionEn:
+      "Gift your loved ones the authentic taste of Bogura. Two clay pots of doi in premium packaging — perfect for Eid, birthdays or any special occasion.",
+    weight: 1000,
+    weightLabel: "২ × ৫০০ গ্রাম",
+    price: 560,
+    oldPrice: 620,
+    rating: 4.9,
+    reviewsCount: 275,
+    stock: 45,
+    tags: ["new"],
+    image: "gift-box",
+    gallery: ["gift-box", "traditional-pot", "premium-jar"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Sugar", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 120,
+      fat: 4.5,
+      protein: 4.2,
+      carbs: 16,
+      sugar: 14,
+      calciumMg: 110,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+  {
+    slug: "premium-jar-doi-1kg",
+    nameBn: "প্রিমিয়াম জার (১ কেজি)",
+    nameEn: "Premium Jar (1 kg)",
+    taglineBn: "আধুনিক প্যাকেজিং, প্রাচীন স্বাদ",
+    taglineEn: "Modern packaging, ancient taste",
+    descriptionBn:
+      "যারা ভ্রমণে বা দীর্ঘ সময় সংরক্ষণের জন্য চান, তাদের জন্য আধুনিক কাচের জারে প্রিমিয়াম দই। স্বাদে পুরোপুরি খাঁটি, প্যাকেজিংয়ে সম্পূর্ণ আধুনিক।",
+    descriptionEn:
+      "Premium doi in a modern glass jar for those who travel or want longer freshness. Entirely authentic in taste, fully modern in packaging.",
+    weight: 1000,
+    weightLabel: "১ কেজি",
+    price: 520,
+    oldPrice: 560,
+    rating: 4.8,
+    reviewsCount: 198,
+    stock: 70,
+    tags: ["new"],
+    image: "premium-jar",
+    gallery: ["premium-jar", "traditional-pot", "yogurt-bowl"],
+    ingredientsBn: ["খাঁটি গরুর দুধ", "চিনি", "প্রাকৃতিক টক"],
+    ingredientsEn: ["Pure cow's milk", "Sugar", "Natural starter culture"],
+    nutrition: {
+      serving: "100g",
+      energyKcal: 120,
+      fat: 4.5,
+      protein: 4.2,
+      carbs: 16,
+      sugar: 14,
+      calciumMg: 110,
+    },
+    delivery: {
+      insideDhaka: 80,
+      outsideDhaka: 120,
+      leadTimeBn: "ঢাকায় ২৪ ঘণ্টা, বাইরে ২ দিন",
+      leadTimeEn: "24h inside Dhaka, 2 days outside",
+      freeOver: 1000,
+    },
+    active: true,
+  },
+];
+
+async function seedProducts() {
+  await mongoose.connect(env.MONGODB_URI);
+  console.log("✅ MongoDB connected");
+  for (const p of products) {
+    const existing = await Product.findOne({ slug: p.slug });
+    if (existing) {
+      console.log(`ℹ️  Already exists: ${p.slug}`);
+      continue;
+    }
+    await Product.create(p);
+    console.log(`✅ Created: ${p.slug}`);
+  }
+  console.log(`Total products in DB: ${await Product.countDocuments()}`);
+  await mongoose.disconnect();
+}
+
+seedProducts().catch((err) => {
+  console.error("❌ Seed failed:", err);
+  process.exit(1);
+});
