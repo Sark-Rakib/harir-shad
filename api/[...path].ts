@@ -14,7 +14,10 @@ async function connectDbOnce(uri: string): Promise<void> {
 
 const app = createApp();
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+export default async function handler(
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
   try {
     await connectDbOnce(env.MONGODB_URI);
   } catch {

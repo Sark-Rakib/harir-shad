@@ -4,10 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:server": "cd backend && npm run dev",
+    "dev:all": "concurrently -k -n api,web -c blue,green \"npm run dev:server\" \"npm run dev\"",
     "build": "next build",
+    "build:server": "cd backend && npm run typecheck",
+    "build:all": "npm run build:server && npm run build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "install:all": "npm install && cd backend && npm install",
     "postinstall": "cd backend && npm ci"
   },
   "dependencies": {
