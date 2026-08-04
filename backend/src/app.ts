@@ -2,9 +2,6 @@ import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import path from "node:path";
-import fs from "node:fs";
-import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import cartRoutes from "./routes/cart.routes";
 import miscRoutes from "./routes/misc.routes";
@@ -27,13 +24,6 @@ export function createApp() {
   );
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
-
-  const uploadsDir = path.resolve(process.cwd(), env.UPLOAD_DIR);
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  app.use(
-    "/uploads",
-    express.static(uploadsDir, { maxAge: "7d", immutable: true }),
-  );
 
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,

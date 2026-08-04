@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import { StoryVideo } from "../models/StoryVideo";
 import { HttpError } from "../utils/HttpError";
-import { deleteVideo, saveVideo } from "../services/videoStorage";
+import { deleteVideo, uploadVideo } from "../services/cloudinary";
 import { env } from "../config/env";
 
 const metadataSchema = z.object({
@@ -36,24 +36,25 @@ export async function upsertStoryVideo(req: Request, res: Response) {
   assertVideoFile(req.file);
 
   const metadata = metadataSchema.parse(req.body);
-  const saved = saveVideo(req.file);
+  const uploaded = await uploadVideo(req.file.buffer);
 
-  // Replace: deactivate the previous active video so only one stays live.
+  // Replace: deactivate any other record and reuse the current active one so
+  // only a single video stays live.
   const previous = await StoryVideo.findOne({ active: true }).sort({ createdAt: -1 });
   if (previous) {
-    const oldFileName = previous.fileName;
+    const oldPublicId = previous.publicId;
     await StoryVideo.updateMany(
       { _id: { $ne: previous._id }, active: true },
       { active: false },
     );
     previous.active = true;
-    previous.videoUrl = saved.url;
-    previous.fileName = saved.fileName;
+    previous.videoUrl = uploaded.secureUrl;
+    previous.publicId = uploaded.publicId;
     previous.title = metadata.title;
     previous.description = metadata.description;
     await previous.save();
-    if (oldFileName && oldFileName !== saved.fileName) {
-      deleteVideo(oldFileName);
+    if (oldPublicId && oldPublicId !== uploaded.publicId) {
+      await deleteVideo(oldPublicId);
     }
     return res.json({ video: previous.toJSON() });
   }
@@ -61,8 +62,8 @@ export async function upsertStoryVideo(req: Request, res: Response) {
   const created = await StoryVideo.create({
     title: metadata.title,
     description: metadata.description,
-    videoUrl: saved.url,
-    fileName: saved.fileName,
+    videoUrl: uploaded.secureUrl,
+    publicId: uploaded.publicId,
     active: true,
   });
   return res.status(201).json({ video: created.toJSON() });
@@ -83,8 +84,8 @@ export async function deleteStoryVideo(_req: Request, res: Response) {
   const video = await StoryVideo.findOne({ active: true }).sort({ createdAt: -1 });
   if (!video) throw new HttpError(404, "কোনো ভিডিও পাওয়া যায়নি।");
 
-  const fileName = video.fileName;
+  const publicId = video.publicId;
   await StoryVideo.deleteOne({ _id: video._id });
-  deleteVideo(fileName);
+  await deleteVideo(publicId);
   return res.json({ message: "ভিডিও মুছে ফেলা হয়েছে।" });
 }

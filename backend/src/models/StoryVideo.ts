@@ -5,7 +5,7 @@ const storyVideoSchema = new Schema(
     title: { type: String, default: "", trim: true, maxlength: 200 },
     description: { type: String, default: "", trim: true, maxlength: 2000 },
     videoUrl: { type: String, required: true, trim: true },
-    fileName: { type: String, default: "", trim: true },
+    publicId: { type: String, default: "", trim: true },
     active: { type: Boolean, default: true },
   },
   { timestamps: true },

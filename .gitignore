@@ -36,9 +36,6 @@ yarn-error.log*
 # vercel
 .vercel
 
-# backend runtime uploads (video/image files)
-/backend/uploads/
-
 # leftover dev scripts
 svc-test.mjs
 

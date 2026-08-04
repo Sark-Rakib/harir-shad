@@ -9,8 +9,11 @@ const envSchema = z.object({
 
   IMGBB_API_KEY: z.string().default(""),
 
-  STORY_VIDEO_MAX_MB: z.coerce.number().default(32),
-  UPLOAD_DIR: z.string().default("uploads"),
+  STORY_VIDEO_MAX_MB: z.coerce.number().default(100),
+
+  CLOUDINARY_CLOUD_NAME: z.string().default(""),
+  CLOUDINARY_API_KEY: z.string().default(""),
+  CLOUDINARY_API_SECRET: z.string().default(""),
 
   IS_LIVE: z
     .string()
