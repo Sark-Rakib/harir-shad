@@ -76,24 +76,22 @@ cd backend && npm run typecheck     # backend
 
 ## Deploying to Vercel
 
-The app is deployed as **two Vercel projects** from the same GitHub repo: the **API** (Express,
-from `backend/`) and the **frontend** (Next.js, from the repo root). The API runs as a single
-catch-all serverless function (`backend/api/[...path].ts`) that mounts the Express app and holds
-a cached MongoDB connection. No Docker or separate host is required.
+The whole app deploys as **one Vercel project** from the repo root. The Next.js frontend and the
+Express API share the same origin — the API runs as a single catch-all serverless function
+(`api/[...path].ts`) that mounts the Express app and holds a cached MongoDB connection.
+No Docker or separate host is required.
 
-### A. Deploy the API first
+### Steps
 
 1. Push the repo to GitHub (`git push origin main`).
 2. Import the repo at [vercel.com/new](https://vercel.com/new).
-   - **Root Directory:** `backend/`
-   - Framework preset locks to **Express** — leave it, it's correct.
+   - **Root Directory:** `/` (repo root) — framework auto-detected as **Next.js**.
+   - Git connection: your `harir-shad` repo.
 3. Set the backend environment variables (Settings → Environment Variables), then **Redeploy**:
 
    ```
    MONGODB_URI=mongodb+srv://...      # required — must be reachable (e.g. Atlas)
    JWT_SECRET=<a-long-random-string>  # required
-   AUTH_COOKIE_SECURE=true            # cross-site deploy (frontend on another origin)
-   AUTH_COOKIE_SAME_SITE=none         # cross-site deploy (frontend on another origin)
    CLOUDINARY_CLOUD_NAME=...
    CLOUDINARY_API_KEY=...
    CLOUDINARY_API_SECRET=...
@@ -103,34 +101,27 @@ a cached MongoDB connection. No Docker or separate host is required.
    SSLCOMMERZ_STORE_ID=...
    SSLCOMMERZ_STORE_PASSWORD=...
    FRONTEND_URL=https://<your-site>.vercel.app
-   SERVER_URL=https://<api-url>.vercel.app
+   SERVER_URL=https://<your-site>.vercel.app
    ```
 
-4. Note the API URL (e.g. `https://harir-shad-api.vercel.app`) and verify
-   `https://<api-url>/api/health` returns `{"status":"ok"}`.
-
-### B. Deploy the frontend
-
-1. Import the same repo at [vercel.com/new] again.
-   - **Root Directory:** `/` (repo root) — framework auto-detected as **Next.js**.
-2. Set these environment variables, then deploy:
-
-   ```
-   NEXT_PUBLIC_API_URL=https://<api-url>.vercel.app   # the API URL from step A.4
-   NEXT_PUBLIC_APP_URL=https://<your-site>.vercel.app
-   ```
-
-   `NEXT_PUBLIC_*` values are baked in at **build** time — if you change them, hit **Redeploy**.
+4. Deploy. The `postinstall` script (`cd backend && npm ci`) installs the API's dependencies so
+   the serverless function can bundle them.
 
 ### Notes
 
-- Set `NEXT_PUBLIC_API_URL` to the **live API domain** (not `localhost`). The frontend sends the
-  auth cookie on every request (`credentials: "include"`); the API reflects any origin in CORS.
-- Because the frontend and API are on **different origins**, the API must use
-  `AUTH_COOKIE_SECURE=true` and `AUTH_COOKIE_SAME_SITE=none` so the login cookie survives.
+- **No `NEXT_PUBLIC_API_URL` needed.** The frontend calls the API through a relative
+  `/api/...` path on its own origin (see `src/lib/api.ts`), so the auth cookie is **same-site**
+  and just works. No CORS or cross-site cookie setup is required.
+- The auth cookie works with the defaults (`SameSite=Lax`, `Secure` off) on the same origin.
+  Setting `AUTH_COOKIE_SECURE=true` on the HTTPS site is fine too.
 - `MONGODB_URI` must point to a reachable host (e.g. MongoDB Atlas); localhost won't work.
 - File uploads (story video → Cloudinary, product images → ImgBB) run from memory buffers and
   work on serverless with no disk.
+- If you get `FUNCTION_INVOCATION_FAILED`, open `https://<your-site>.vercel.app/api/health` —
+  the function returns a JSON body with the real error message.
+- The `backend/` directory also contains its own `api/[...path].ts` + `vercel.json`, which let
+  you deploy the API as a **separate** Vercel project (Root Directory `backend/`) if you ever
+  want to split it.
 
 ## Authentication
 
@@ -155,8 +146,9 @@ a cached MongoDB connection. No Docker or separate host is required.
 ## Project Structure
 
 ```
+api/[...path].ts        # Vercel serverless catch-all that mounts the Express API
 backend/
-  api/[...path].ts      # Vercel serverless catch-all that mounts the Express API
+  api/[...path].ts      # same catch-all, for deploying the API as a separate project
   src/
     config/env.ts          # Zod-validated environment variables
     controllers/           # auth, cart, product, order, payment, user, storyVideo, misc
