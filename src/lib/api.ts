@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+// All callers pass absolute paths like "/api/products". When NEXT_PUBLIC_API_URL
+// is not set (Vercel same-origin deploy), API_URL is empty and the path is used
+// as-is. For local dev, set NEXT_PUBLIC_API_URL=http://localhost:5000.
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export class ApiError extends Error {
   status: number;

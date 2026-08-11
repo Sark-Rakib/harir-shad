@@ -17,8 +17,9 @@ export interface ProductListResult {
   pages: number;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+// Callers pass absolute paths like "/api/products". On Vercel (same origin)
+// NEXT_PUBLIC_API_URL is unset, so API_URL is empty and the path is used as-is.
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 function buildQuery(params: ProductQuery): string {
   const sp = new URLSearchParams();
