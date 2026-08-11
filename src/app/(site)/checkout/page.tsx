@@ -12,7 +12,6 @@ import type {
   DeliveryMethod,
   OrderPayload,
   OrderResult,
-  PaymentMethod,
 } from "@/lib/types";
 import { formatBDT } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
@@ -64,7 +63,7 @@ export default function CheckoutPage() {
     address: "",
     district: "ঢাকা",
     deliveryMethod: "standard" as DeliveryMethod,
-    paymentMethod: "cod" as PaymentMethod,
+    paymentMethod: "cod" as const,
     note: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -239,21 +238,6 @@ export default function CheckoutPage() {
                       <option value="standard">স্ট্যান্ডার্ড</option>
                       <option value="express">এক্সপ্রেস</option>
                       <option value="pickup">পিকআপ</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-brown-600 dark:text-cream/70">
-                      পেমেন্ট পদ্ধতি
-                    </label>
-                    <select
-                      value={form.paymentMethod}
-                      onChange={(e) => set("paymentMethod", e.target.value)}
-                      className={inputCls}
-                    >
-                      <option value="cod">ক্যাশ অন ডেলিভারি</option>
-                      <option value="bkash">বিকাশ</option>
-                      <option value="nagad">নগদ</option>
-                      <option value="card">কার্ড</option>
                     </select>
                   </div>
                   <div className="sm:col-span-2">

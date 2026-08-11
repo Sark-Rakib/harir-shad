@@ -6,7 +6,6 @@ import authRoutes from "./routes/auth.routes";
 import cartRoutes from "./routes/cart.routes";
 import miscRoutes from "./routes/misc.routes";
 import orderRoutes from "./routes/order.routes";
-import paymentRoutes from "./routes/payment.routes";
 import productRoutes from "./routes/product.routes";
 import storyVideoRoutes from "./routes/storyVideo.routes";
 import userRoutes from "./routes/user.routes";
@@ -50,7 +49,6 @@ export function createApp() {
   app.use("/api/cart", cartRoutes);
   app.use("/api/story-video", storyVideoRoutes);
   app.use("/api/orders", orderRoutes);
-  app.use("/api/payments", paymentRoutes);
   app.use("/api", miscRoutes);
 
   app.use(notFound);

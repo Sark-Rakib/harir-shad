@@ -3,7 +3,6 @@ import { z } from "zod";
 import { Order } from "../models/Order";
 import { Product } from "../models/Product";
 import { HttpError } from "../utils/HttpError";
-import { initPayment } from "../services/sslcommerz";
 
 const itemSchema = z.object({
   productId: z.string().min(1),
@@ -35,7 +34,7 @@ const orderSchema = z.object({
   total: z.coerce.number().min(1),
   coupon: z.string().optional().default(""),
   note: z.string().optional().default(""),
-  paymentMethod: z.enum(["cod", "bkash", "nagad", "card"]),
+  paymentMethod: z.enum(["cod"]).default("cod"),
   idempotencyKey: z.string().optional(),
 });
 
@@ -73,8 +72,6 @@ export async function createOrder(req: Request, res: Response) {
       return res.status(201).json({
         order: existing.toJSON(),
         orderId: existing.orderId,
-        gatewayUrl: null,
-        paymentUrl: null,
       });
     }
   }
@@ -82,38 +79,11 @@ export async function createOrder(req: Request, res: Response) {
   const orderId = generateOrderId();
   const userId = (req as Request & { user?: { id: string } }).user?.id ?? "";
 
-  let tranId = "";
-  let gatewayUrl: string | undefined;
-
-  if (data.paymentMethod !== "cod") {
-    try {
-      const payment = await initPayment({
-        tranId: orderId,
-        total: data.total,
-        name: data.customer.name,
-        email: data.customer.email || undefined,
-        phone: data.customer.phone,
-        address: data.customer.address,
-        city: data.customer.district,
-        customerId: orderId,
-        itemName: data.items.map((i) => i.nameBn).join(", ").slice(0, 100),
-      });
-      tranId = orderId;
-      gatewayUrl = payment.GatewayPageURL;
-    } catch {
-      throw new HttpError(
-        400,
-        "অনলাইন পেমেন্ট শুরু করা যায়নি। ক্যাশ অন ডেলিভারি বেছে নিন অথবা পরে আবার চেষ্টা করুন।",
-      );
-    }
-  }
-
   let order;
   try {
     order = await Order.create({
       ...data,
       orderId,
-      tranId,
       userId,
       paymentStatus: "pending",
     });
@@ -124,8 +94,6 @@ export async function createOrder(req: Request, res: Response) {
         return res.status(201).json({
           order: existing.toJSON(),
           orderId: existing.orderId,
-          gatewayUrl: null,
-          paymentUrl: null,
         });
       }
     }
@@ -146,8 +114,6 @@ export async function createOrder(req: Request, res: Response) {
   return res.status(201).json({
     order: order.toJSON(),
     orderId,
-    gatewayUrl,
-    paymentUrl: gatewayUrl ?? null,
   });
 }
 

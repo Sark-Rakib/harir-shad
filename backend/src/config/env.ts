@@ -24,14 +24,7 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().default(""),
   CLOUDINARY_API_SECRET: z.string().default(""),
 
-  IS_LIVE: z
-    .string()
-    .default("false")
-    .transform((v) => v === "true"),
-  SSLCOMMERZ_STORE_ID: z.string().default(""),
-  SSLCOMMERZ_STORE_PASSWORD: z.string().default(""),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
-  SERVER_URL: z.string().default("http://localhost:5000"),
 
   ADMIN_EMAIL: z.string().email().default("harirshadbogura@gmail.com"),
   ADMIN_PASSWORD: z.string().min(6).default("admin12345"),
@@ -51,5 +44,3 @@ if (!parsed.success) {
 export const env = parsed.data;
 
 export const isImgbbConfigured = () => env.IMGBB_API_KEY.length > 0;
-export const isSslcommerzConfigured = () =>
-  env.SSLCOMMERZ_STORE_ID.length > 0 && env.SSLCOMMERZ_STORE_PASSWORD.length > 0;

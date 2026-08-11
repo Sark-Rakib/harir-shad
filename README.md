@@ -8,7 +8,7 @@ Next.js (App Router) frontend and an Express + MongoDB API.
 - **Frontend:** Next.js 15+ (App Router), TypeScript, Tailwind CSS, Framer Motion, Sonner toasts
 - **Backend:** Express, Mongoose, TypeScript, `tsx` for dev/watch
 - **Storage:** MongoDB (data), Cloudinary (story videos), ImgBB (product images)
-- **Payments:** SSLCommerz (sandbox/live via `IS_LIVE`)
+- **Payments:** ক্যাশ অন ডেলিভারি (Cash on Delivery)
 
 ## Getting Started
 
@@ -36,7 +36,8 @@ npm install
 npm run dev            # → http://localhost:3000
 ```
 
-The frontend calls the API at `NEXT_PUBLIC_API_URL` (default `http://localhost:5000`).
+The frontend calls the API through a relative `/api` path by default (see `src/lib/api.ts`).
+For local dev against the local backend, set `NEXT_PUBLIC_API_URL=http://localhost:5000` in `.env.local`.
 
 ### Checks
 
@@ -62,11 +63,6 @@ cd backend && npm run typecheck     # backend
 | `CLOUDINARY_CLOUD_NAME` | `""` | Story video uploads (Cloudinary) |
 | `CLOUDINARY_API_KEY` | `""` | Story video uploads |
 | `CLOUDINARY_API_SECRET` | `""` | Story video uploads |
-| `IS_LIVE` | `false` | Live vs sandbox SSLCommerz |
-| `SSLCOMMERZ_STORE_ID` | `""` | Payment gateway |
-| `SSLCOMMERZ_STORE_PASSWORD` | `""` | Payment gateway |
-| `FRONTEND_URL` | `http://localhost:3000` | CORS / payment callbacks |
-| `SERVER_URL` | `http://localhost:5000` | Payment callbacks |
 | `ADMIN_NAME` | `হাঁড়ির স্বাদ অ্যাডমিন` | Seeded admin name |
 
 ### Frontend (`.env.local`)
@@ -97,11 +93,6 @@ No Docker or separate host is required.
    CLOUDINARY_API_SECRET=...
    IMGBB_API_KEY=...
    STORY_VIDEO_MAX_MB=100
-   IS_LIVE=false
-   SSLCOMMERZ_STORE_ID=...
-   SSLCOMMERZ_STORE_PASSWORD=...
-   FRONTEND_URL=https://<your-site>.vercel.app
-   SERVER_URL=https://<your-site>.vercel.app
    ```
 
 4. Deploy. The `postinstall` script (`cd backend && npm ci`) installs the API's dependencies so
@@ -151,13 +142,13 @@ backend/
   api/[...path].ts      # same catch-all, for deploying the API as a separate project
   src/
     config/env.ts          # Zod-validated environment variables
-    controllers/           # auth, cart, product, order, payment, user, storyVideo, misc
+    controllers/           # auth, cart, product, order, user, storyVideo, misc
     middleware/auth.ts     # requireAuth / optionalAuth (cookie OR bearer)
     middleware/error.ts
     models/                # Mongoose models (User, Product, Cart, Order, StoryVideo, …)
     routes/
     scripts/seed.ts
-    services/              # auth, cloudinary, imagebb, sslcommerz
+    services/              # auth, cloudinary, imagebb
     utils/cookies.ts       # setAuthCookie / clearAuthCookie / parseCookieToken
 src/
   app/(site)/              # public pages: products, cart, checkout, auth, about, contact, wishlist
@@ -194,4 +185,3 @@ src/
 | POST | `/api/upload` | admin | Image upload (ImgBB) |
 | GET | `/api/stats` | admin | Dashboard stats |
 | GET/PUT/DELETE | `/api/users[/:id]` | admin | User management |
-| GET/POST | `/api/payments/success`, `/fail`, `/cancel`, `/ipn` | — | SSLCommerz flow |

@@ -49,7 +49,6 @@ const orderSchema = new Schema(
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
-    tranId: { type: String, default: "" },
     idempotencyKey: { type: String, trim: true },
   },
   { timestamps: true },
