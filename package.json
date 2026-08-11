@@ -12,8 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "install:all": "npm install && cd backend && npm install",
-    "postinstall": "cd backend && npm ci"
+    "install:all": "npm install && cd backend && npm install"
   },
   "dependencies": {
     "clsx": "^2.1.1",
