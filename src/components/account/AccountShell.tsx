@@ -85,7 +85,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
     return null;
   }
 
-  const isActive = (href: string) => pathname.startsWith(href);
+  const isActive = (href: string) => (pathname ?? "").startsWith(href);
 
   const navItems = [
     { href: "/account/orders", label: "আমার অর্ডার", en: "My Orders", icon: ClipboardList },
@@ -126,7 +126,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
               label="অ্যাডমিন প্যানেল"
               en="Admin Panel"
               icon={ShieldCheck}
-              active={pathname.startsWith("/admin")}
+              active={(pathname ?? "").startsWith("/admin")}
               onClick={() => setMenuOpen(false)}
             />
           </div>

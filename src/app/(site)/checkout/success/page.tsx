@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("order") ?? "";
+  const orderId = searchParams?.get("order") ?? "";
 
   return (
     <div className="bg-hero-gradient">

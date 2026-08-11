@@ -8,7 +8,8 @@ import { useAdminFetch } from "@/components/admin/useAdminFetch";
 import type { AdminProduct } from "@/lib/types";
 
 export default function AdminEditProductPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id ?? "";
   const { data, loading, error, reload } = useAdminFetch<{
     product: AdminProduct;
   }>(`/api/products/id/${id}`);

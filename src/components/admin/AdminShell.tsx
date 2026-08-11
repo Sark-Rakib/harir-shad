@@ -101,7 +101,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === href : pathname.startsWith(href);
+    href === "/admin" ? (pathname ?? "") === href : (pathname ?? "").startsWith(href);
 
   return (
     <div className="min-h-screen bg-cream dark:bg-brown-950">

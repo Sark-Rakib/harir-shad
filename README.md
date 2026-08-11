@@ -73,8 +73,8 @@ cd backend && npm run typecheck     # backend
 ## Deploying to Vercel
 
 The whole app deploys as **one Vercel project** from the repo root. The Next.js frontend and the
-Express API share the same origin — the API runs as a single catch-all serverless function
-(`api/[...path].ts`) that mounts the Express app and holds a cached MongoDB connection.
+Express API share the same origin — the API runs as a single Next.js catch-all API route
+(`src/pages/api/[...path].ts`) that mounts the Express app and holds a cached MongoDB connection.
 No Docker or separate host is required.
 
 ### Steps
@@ -109,7 +109,7 @@ No Docker or separate host is required.
 - File uploads (story video → Cloudinary, product images → ImgBB) run from memory buffers and
   work on serverless with no disk.
 - If you get `FUNCTION_INVOCATION_FAILED`, open `https://<your-site>.vercel.app/api/health` —
-  the function returns a JSON body with the real error message.
+  the route returns a JSON body with the real error message.
 - The `backend/` directory also contains its own `api/[...path].ts` + `vercel.json`, which let
   you deploy the API as a **separate** Vercel project (Root Directory `backend/`) if you ever
   want to split it.
@@ -137,9 +137,7 @@ No Docker or separate host is required.
 ## Project Structure
 
 ```
-api/[...path].ts        # Vercel serverless catch-all that mounts the Express API
 backend/
-  api/[...path].ts      # same catch-all, for deploying the API as a separate project
   src/
     config/env.ts          # Zod-validated environment variables
     controllers/           # auth, cart, product, order, user, storyVideo, misc
@@ -151,14 +149,15 @@ backend/
     services/              # auth, cloudinary, imagebb
     utils/cookies.ts       # setAuthCookie / clearAuthCookie / parseCookieToken
 src/
-  app/(site)/              # public pages: products, cart, checkout, auth, about, contact, wishlist
-  app/(dashboard)/         # admin + account areas
-  components/admin/        # admin UI (product form, image upload, useAdminFetch, …)
-  components/layout/       # Navbar, Footer, …
-  components/product/      # ProductCard, ProductDetail, StoryVideoPlayer, …
-  lib/api.ts               # fetch wrapper (credentials: include, optional bearer)
+  pages/api/[...path].ts  # catch-all route that mounts the Express API
+  app/(site)/             # public pages: products, cart, checkout, auth, about, contact, wishlist
+  app/(dashboard)/        # admin + account areas
+  components/admin/       # admin UI (product form, image upload, useAdminFetch, …)
+  components/layout/      # Navbar, Footer, …
+  components/product/     # ProductCard, ProductDetail, StoryVideoPlayer, …
+  lib/api.ts              # fetch wrapper (credentials: include, optional bearer)
   lib/types.ts
-  providers/               # AuthProvider, CartProvider
+  providers/              # AuthProvider, CartProvider
 ```
 
 ## API Overview
