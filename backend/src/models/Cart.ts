@@ -1,4 +1,9 @@
-import { Schema, model, type InferSchemaType } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const cartItemSchema = new Schema(
   {
@@ -34,6 +39,6 @@ cartSchema.set("toJSON", {
 
 export type CartDoc = InferSchemaType<typeof cartSchema>;
 
-import mongoose from "mongoose";
-
-export const Cart = mongoose.models["Cart"] || model("Cart", cartSchema);
+export const Cart =
+  (mongoose.models.Cart as Model<CartDoc> | undefined) ||
+  model<CartDoc>("Cart", cartSchema);

@@ -26,7 +26,7 @@ export async function listUsers(req: Request, res: Response) {
 
   const safeUsers = users.map((u) => ({
     ...u,
-    id: u._id.toString(),
+    id: String(u._id),
     passwordHash: undefined,
   }));
 
