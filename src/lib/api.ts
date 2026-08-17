@@ -1,6 +1,7 @@
-// All callers pass absolute paths like "/api/products". When NEXT_PUBLIC_API_URL
-// is not set (Vercel same-origin deploy), API_URL is empty and the path is used
-// as-is. For local dev, set NEXT_PUBLIC_API_URL=http://localhost:5000.
+import { getServerBaseUrl } from "./utils";
+
+// All callers pass absolute paths like "/api/products". On the server, relative
+// URLs don't resolve, so we construct an absolute base URL.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export class ApiError extends Error {
@@ -32,7 +33,7 @@ async function request<T>(
 ): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(`${getServerBaseUrl() || API_URL}${path}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +88,7 @@ export const api = {
       headers: authHeaders(token),
     }),
   postFormAuth: <T>(path: string, formData: FormData, token?: string | null) =>
-    fetch(`${API_URL}${path}`, {
+    fetch(`${getServerBaseUrl() || API_URL}${path}`, {
       method: "POST",
       headers: authHeaders(token),
       body: formData,

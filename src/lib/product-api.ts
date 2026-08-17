@@ -1,4 +1,5 @@
 import type { Product } from "./types";
+import { getServerBaseUrl } from "./utils";
 
 export interface ProductQuery {
   q?: string;
@@ -17,16 +18,9 @@ export interface ProductListResult {
   pages: number;
 }
 
-// Callers pass absolute paths like "/api/products". On Vercel (same origin)
-// NEXT_PUBLIC_API_URL is unset, so API_URL is empty and the path is used as-is.
-// On the server (Node.js) relative URLs don't resolve, so we need an absolute base.
+// Callers pass absolute paths like "/api/products". On the server, relative URLs
+// don't resolve, so we construct an absolute base URL.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-const SERVER_BASE =
-  typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      "http://localhost:3000"
-    : "";
 
 function buildQuery(params: ProductQuery): string {
   const sp = new URLSearchParams();
@@ -59,7 +53,7 @@ async function parseJson<T>(res: Response): Promise<T> {
 async function fetchJson<T>(path: string): Promise<T> {
   let res: Response;
   try {
-    const base = SERVER_BASE || API_URL;
+    const base = getServerBaseUrl() || API_URL;
     res = await fetch(`${base}${path}`, { cache: "no-store" });
   } catch {
     throw new Error("সার্ভারে সংযোগ করা যায়নি। আবার চেষ্টা করুন।");
