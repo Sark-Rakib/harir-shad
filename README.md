@@ -3,6 +3,8 @@
 An e-commerce web app for Harir Shad, a Bengali dairy brand (দই / doi). Built with a
 Next.js (App Router) frontend and an Express + MongoDB API.
 
+# Live Link : https://harir-shad.vercel.app
+
 ## Stack
 
 - **Frontend:** Next.js 15+ (App Router), TypeScript, Tailwind CSS, Framer Motion, Sonner toasts
