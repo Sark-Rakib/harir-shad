@@ -67,4 +67,6 @@ orderSchema.set("toJSON", {
 
 export type OrderDoc = InferSchemaType<typeof orderSchema>;
 
-export const Order = model("Order", orderSchema);
+import mongoose from "mongoose";
+
+export const Order = mongoose.models["Order"] || model("Order", orderSchema);

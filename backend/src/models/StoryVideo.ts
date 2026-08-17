@@ -22,4 +22,6 @@ storyVideoSchema.set("toJSON", {
 
 export type StoryVideoDoc = InferSchemaType<typeof storyVideoSchema>;
 
-export const StoryVideo = model("StoryVideo", storyVideoSchema);
+import mongoose from "mongoose";
+
+export const StoryVideo = mongoose.models["StoryVideo"] || model("StoryVideo", storyVideoSchema);

@@ -34,4 +34,6 @@ cartSchema.set("toJSON", {
 
 export type CartDoc = InferSchemaType<typeof cartSchema>;
 
-export const Cart = model("Cart", cartSchema);
+import mongoose from "mongoose";
+
+export const Cart = mongoose.models["Cart"] || model("Cart", cartSchema);

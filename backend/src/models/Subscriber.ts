@@ -9,4 +9,6 @@ const subscriberSchema = new Schema(
 
 export type SubscriberDoc = InferSchemaType<typeof subscriberSchema>;
 
-export const Subscriber = model("Subscriber", subscriberSchema);
+import mongoose from "mongoose";
+
+export const Subscriber = mongoose.models["Subscriber"] || model("Subscriber", subscriberSchema);

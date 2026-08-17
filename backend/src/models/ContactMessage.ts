@@ -23,4 +23,6 @@ contactMessageSchema.set("toJSON", {
 
 export type ContactMessageDoc = InferSchemaType<typeof contactMessageSchema>;
 
-export const ContactMessage = model("ContactMessage", contactMessageSchema);
+import mongoose from "mongoose";
+
+export const ContactMessage = mongoose.models["ContactMessage"] || model("ContactMessage", contactMessageSchema);

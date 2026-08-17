@@ -63,4 +63,6 @@ productSchema.set("toJSON", {
 
 export type ProductDoc = InferSchemaType<typeof productSchema>;
 
-export const Product = model("Product", productSchema);
+import mongoose from "mongoose";
+
+export const Product = mongoose.models["Product"] || model("Product", productSchema);

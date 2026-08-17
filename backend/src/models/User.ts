@@ -40,4 +40,6 @@ userSchema.set("toJSON", {
 
 export type UserDoc = InferSchemaType<typeof userSchema>;
 
-export const User = model("User", userSchema);
+import mongoose from "mongoose";
+
+export const User = mongoose.models["User"] || model("User", userSchema);
