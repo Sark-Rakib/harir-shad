@@ -1,5 +1,5 @@
 import type { Product } from "@/lib/types";
-import { fetchAllProducts } from "@/lib/product-api";
+import { fetchAllProducts } from "@/lib/server-product-api";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProductCard } from "./ProductCard";
 

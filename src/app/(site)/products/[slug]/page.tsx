@@ -7,7 +7,7 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
-import { fetchProductBySlug } from "@/lib/product-api";
+import { fetchProductBySlug } from "@/lib/server-product-api";
 import { site } from "@/lib/site";
 
 interface ProductPageProps {

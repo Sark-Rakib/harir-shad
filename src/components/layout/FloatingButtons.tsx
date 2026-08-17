@@ -57,7 +57,7 @@ export function FloatingButtons() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-24 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-brown-200 bg-white/80 text-brown-700 shadow-soft backdrop-blur transition-colors hover:border-terracotta-400 hover:text-terracotta-600 md:bottom-6 md:left-6 md:right-auto"
+            className="fixed bottom-10 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-brown-200 bg-white/80 text-brown-700 shadow-soft backdrop-blur transition-colors hover:border-terracotta-400 hover:text-terracotta-600 md:bottom-6 md:left-6 md:right-auto"
             aria-label="Back to top"
           >
             <ArrowUp size={20} />

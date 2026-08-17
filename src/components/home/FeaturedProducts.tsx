@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { fetchLatestProducts } from "@/lib/product-api";
+import { fetchLatestProducts } from "@/lib/server-product-api";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
